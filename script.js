@@ -1,16 +1,21 @@
 // Basic math functions
-const add = (a, b) => a + b;
-const subtract = (a, b) => a - b;
-const divide = (a, b) => (b === 0 ? "Error: Division by zero" : a / b);
-const multiply = (a, b) => a * b;
+const add = (a, b) => roundResult(a + b);
+const subtract = (a, b) => roundResult(a - b);
+const divide = (a, b) => (b === 0 ? "Error: Division by zero" : roundResult(a / b));
+const multiply = (a, b) => roundResult(a * b);
 
-// Variables for storing the first number, second number, operator, and display state
+// Function to round results 
+function roundResult(result) {
+    const decimalPlaces = 2;
+    return Math.round(result * Math.pow(10, decimalPlaces)) / Math.pow(10, decimalPlaces);
+}
+
+// Function to perform calculation based on operator
 let numberOne = null;
 let numberTwo = null;
 let operator = null;
 let shouldResetDisplay = false;
 
-// Function to perform the calculation based on the operator
 function operate(numberOne, numberTwo, operator) {
     const operations = {
         '+': add,
@@ -21,7 +26,7 @@ function operate(numberOne, numberTwo, operator) {
     return operations[operator](numberOne, numberTwo);
 }
 
-// Variables + function to update the display
+// Variables + function to update display
 let displayValue = '0';
 const display = document.getElementById('display');
 
@@ -31,6 +36,9 @@ function updateDisplay() {
 
 // Function to handle number input
 function appendNumber(value) {
+    if (value === '.' && displayValue.includes('.')) {
+        return;
+    }
     if (shouldResetDisplay) {
         displayValue = value;
         shouldResetDisplay = false;
@@ -86,7 +94,7 @@ function clearDisplay() {
 
 document.querySelector('button.clear').addEventListener('click', clearDisplay);
 
-// Function to change the sign of the most recent number
+// Function to change sign of most recent number
 function changeSign() {
     displayValue = displayValue.charAt(0) === '-' ? displayValue.substring(1) : `-${displayValue}`;
     updateDisplay();
@@ -94,5 +102,37 @@ function changeSign() {
 
 document.querySelector('button.change-sign').addEventListener('click', changeSign);
 
-// Function to calculate the percentage of two numbers
+// Function to calculate percentages
+function calculatePercentage() {
+    if (numberOne !== null && operator !== null) {
+        numberTwo = parseFloat(displayValue);
 
+        switch (operator) {
+            case 'x':
+                numberOne = numberOne * (numberTwo / 100);
+                break;
+            case '/':
+                if (numberTwo !== 0) {
+                    numberOne = numberOne / (numberTwo / 100);
+                } else {
+                    displayValue = "Error: Division by zero";
+                }
+                break;
+            case '+':
+                numberOne = numberOne + (numberTwo * numberOne) / 100;
+                break;
+            case '-':
+                numberOne = numberOne - (numberTwo * numberOne) / 100;
+                break;
+            case '%':
+                numberOne = (numberOne / numberTwo) * 100;
+                break;
+        }
+
+        displayValue = `${numberOne}`;
+        updateDisplay();
+        shouldResetDisplay = true;
+    }
+}
+
+document.querySelector('button.percentage').addEventListener('click', calculatePercentage);
